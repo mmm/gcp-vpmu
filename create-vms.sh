@@ -34,8 +34,10 @@ create_pingpong_instances() {
   ############
   # c2 tests
   ############
-  local machine_type="c2-standard-60"
+  local machine_type="c2-standard-30"
   local network_performance_configs="--network-performance-configs=total-egress-bandwidth-tier=TIER_1"
+  #local vpmu_configs="--performance-monitoring-unit=[architectural|standard|enhanced]"
+  local vpmu_configs="--performance-monitoring-unit=enhanced"
 
   ##############
   # a2 tests 8g
@@ -54,6 +56,7 @@ create_pingpong_instances() {
   ##############
   #local machine_type="a2-megagpu-16g"
   #local accelerator="--accelerator=count=16,type=nvidia-tesla-a100"
+  
 
   gcloud compute instances create "${instance_names}" \
     --zone="${zone}" \
@@ -62,7 +65,6 @@ create_pingpong_instances() {
     --machine-type="${machine_type}" \
     --maintenance-policy=TERMINATE \
     --no-restart-on-failure \
-    --resource-policies "${resource_policy}" \
     --provisioning-model=STANDARD \
     --network-interface=no-address,network-tier=PREMIUM,nic-type=GVNIC,network="${network}",subnet="${subnet}" \
     --boot-disk-type=pd-balanced \
@@ -72,21 +74,23 @@ create_pingpong_instances() {
     --shielded-integrity-monitoring \
     --reservation-affinity=any \
     "${network_performance_configs}" \
+    "${vpmu_configs} \
     "${startup_script}"
 
+    #--resource-policies "${resource_policy}" \
     #"${accelerator}" \
 }
 
 main() {
 
-  resource_policy="pingpong"
-  region="${zone%%-[a-f]}"
-  if [ "X$(gcloud compute resource-policies list --filter="name ~ ${resource_policy}" --format="value(name)")" == "X" ]; then
-    gcloud compute resource-policies create group-placement ${resource_policy} \
-        --collocation=COLLOCATED \
-        --region=${region} \
-        --project=${project}
-  fi
+  # resource_policy="pingpong"
+  # region="${zone%%-[a-f]}"
+  # if [ "X$(gcloud compute resource-policies list --filter="name ~ ${resource_policy}" --format="value(name)")" == "X" ]; then
+  #   gcloud compute resource-policies create group-placement ${resource_policy} \
+  #       --collocation=COLLOCATED \
+  #       --region=${region} \
+  #       --project=${project}
+  # fi
 
   create_pingpong_instances ${zone} 
   #create_pingpong_instances ${zone} centos-cloud centos-7
