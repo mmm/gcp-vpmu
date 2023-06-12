@@ -74,7 +74,7 @@ create_pingpong_instances() {
     --shielded-integrity-monitoring \
     --reservation-affinity=any \
     "${network_performance_configs}" \
-    "${vpmu_configs} \
+    "${vpmu_configs}" \
     "${startup_script}"
 
     #--resource-policies "${resource_policy}" \
